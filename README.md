@@ -4,6 +4,5 @@
   </br>
 </h1>
 
-------
 
 - Feature Selection for Credit Scoring using Genetic Algorithm Wrapper(Information Gain)
