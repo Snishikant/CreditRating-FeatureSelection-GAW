@@ -1,5 +1,5 @@
 #use this to convert .dat to .csv
-'''import csv
+import csv
 
 aus = [i.strip().split(',') for i in open("./australian.dat").readlines()]
 with open("./australian.csv", "wb") as f:
@@ -13,3 +13,4 @@ import pandas as pd
 
 aus = pd.read_csv('australian.csv')
 print (aus)
+'''
