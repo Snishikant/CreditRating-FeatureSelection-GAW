@@ -3,7 +3,7 @@ import random
 import numpy as np
 from deap import tools
 import fitness_function as ff
-from dataset.test import FeatureSelection
+from InformationGain import FeatureSelection
 from sklearn import svm
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neural_network import MLPClassifier
