@@ -3,22 +3,17 @@ import random
 import numpy as np
 from deap import tools
 import fitness_function as ff
-from dataset.test import FeatureSelection
+from InformationGain import FeatureSelection
 from sklearn import svm
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neural_network import MLPClassifier
+import time
 
 import pandas as pd
 
+start = time.time()
+
 class FeatureSelectionGA(FeatureSelection):
-    """
-        FeaturesSelectionGA
-        This class uses Genetic Algorithm to find out the best features for an input model
-        using Distributed Evolutionary Algorithms in Python(DEAP) package. Default toolbox is
-        used for GA but it can be changed accordingly.
-
-
-    """
     # def __init__(self,model, x, y, cv_split=5, verbose=0):
     def __init__(self, csv, model = svm.SVC(), cv_split=5, verbose=0, num_feature_select = 10):
 
@@ -40,14 +35,15 @@ class FeatureSelectionGA(FeatureSelection):
 
         super().__init__(csv, num_feature_select)
 
-        self.mutual_info_calculator()
+        self.exp_IG()
 
         self.model =  model
         self.csv_data = pd.read_csv(csv)
         self.x = self.csv_data.iloc[:, self.top_n_features]
         # self.x = self.csv_data.iloc[:, 0:14]
-        self.y = self.csv_data.iloc[:, 14: 15].values.reshape(-1,)
+        self.y = self.csv_data.iloc[:, 20: 21].values.reshape(-1,)
 
+        # print(self.y.shape, self.x.shape)
 
         self.n_features = self.x.shape[1]
         self.toolbox = None
@@ -215,8 +211,12 @@ class FeatureSelectionGA(FeatureSelection):
         print("The accuracy using feature set {} is {}%".format(feature_idx,fitness * 100))
 
 
-clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2), random_state=1)
+# clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2), random_state=1)
+clf = GaussianNB()
+# f = FeatureSelectionGA("australian.csv", GaussianNB)
+f = FeatureSelectionGA("GermanData.csv", clf)
+f.generate(30)
+# f.train()
+end = time.time()
 
-f = FeatureSelectionGA("australian.csv", clf)
-f.generate(60, ngen = 10)
-f.train()
+print("Script run time : ", end - start)
