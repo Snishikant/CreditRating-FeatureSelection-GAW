@@ -36,12 +36,5 @@ aus = pd.read_csv("australian.csv")
 dis = [0,3,4,5,7,8,10,11]
 X = aus.iloc[:,0:14]
 Y = aus.iloc[:,14:15]
-# print(X.shape, Y.shape)
-
-
-# from numpy import genfromtxt
-# my_data = genfromtxt('australian.csv', delimiter=',')
-# X = np.empty
-# for 
 
 print(information_gain(X.values,Y.values[:,0]))
