@@ -2,9 +2,11 @@ import numpy as np
 import pandas as pd
 # Import PySwarms
 from numpy import random
-from sklearn import svm
+from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
-
+from sklearn.metrics import roc_curve, roc_auc_score
+import matplotlib.pyplot as plt
 import fitness_function as ff
 from DragonFlyOptimizer import DragonFlyOptimizer
 from InformationGain import FeatureSelection
@@ -12,7 +14,7 @@ from InformationGain import FeatureSelection
 
 class Project(FeatureSelection):
 
-    def __init__(self,csv = "australian.csv", num_feature_select = 10):
+    def __init__(self,csv = "australian.csv",classifier = GaussianNB(),num_feature_select = 10):
         super().__init__(csv, num_feature_select)
 
         # self.csv_data = pd.read_csv("australian.csv")
@@ -22,9 +24,9 @@ class Project(FeatureSelection):
 
         # self.X = self.csv_data.iloc[:, 0:14]
         self.Y = self.csv_data.iloc[:, 14:15].values.reshape(-1, )
-        self.best_ind = [1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1]
-        self.classifier = GaussianNB()
-        # self.classifier = svm.SVC()
+        self.best_ind = []
+        self.classifier = classifier
+        #self.classifier = svm.SVC()
 
     def f_per_particle(self, m, alpha):
         """Computes for the objective function per particle
@@ -98,20 +100,37 @@ class Project(FeatureSelection):
         optimizer = DragonFlyOptimizer(n_particles=40, dimensions=dimensions)
 
         # Perform optimization
-        cost, pos = optimizer.optimize(self.f, print_step=5, iters=100, verbose=2)
+        cost, pos = optimizer.optimize(self.f, print_step=5, iters=30, verbose=2)
         self.best_ind = pos
         # print("Cost :: ", cost)
         # print("POS :: ", pos)
 
-    def train(self):
+    def train(self, plot_num):
         fit_obj = ff.FitenessFunction(10)
         feature_idx = np.where(np.asarray(self.best_ind) == 1)[0]
         # print(feature_idx, self.best_ind)
         # print(self.X.iloc[:,feature_idx].shape)
+        y_pred = fit_obj.give_predicted(self.classifier, self.X.iloc[:, feature_idx], self.Y)
+        #print (y_pred)
+        #y_pred = np.average(y_pred)
+        fpr, tpr, _ = roc_curve(self.Y,y_pred)
+        auc = roc_auc_score(self.Y, y_pred)
+        plt.plot(fpr,tpr,label="classifier "+str(plot_num)+", auc="+str(auc))
+        plt.plot([0, 1], [0, 1], color='navy', linestyle='--')
+        plt.xlim([0.0, 1.0])
+        plt.ylim([0.0, 1.0])
+        plt.xlabel('False Positive Rate')
+        plt.ylabel('True Positive Rate')
+        plt.title('Receiver operating characteristic(ROC) curve')
+        plt.legend(loc=4)
+        #plt.hold()
         fitness = fit_obj.calculate_fitness(self.classifier, self.X.iloc[:, feature_idx], self.Y)
         print("The accuracy using feature set {} is {}%".format(feature_idx, fitness * 100))
 
-
-s = Project(num_feature_select=10)
-s.Optimize()
-s.train()
+classifier = [GaussianNB(),SVC(),KNeighborsClassifier()]
+plotn = [1, 2, 3]
+for x,y in zip(classifier,plotn):
+    s = Project(classifier = x, num_feature_select = 10)
+    s.Optimize()
+    s.train(plot_num=y)
+plt.show()
